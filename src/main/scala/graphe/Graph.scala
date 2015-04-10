@@ -51,84 +51,6 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
     (this getVertexEdges vertex) map (e => e other vertex)
 
   /**
-   * Détermine si le graphe contient un cycle en partant d'un sommet donné ou non
-   *
-   * @param vertex sommet à partir duquel trouver un cycle
-   * @return true si le graphe contient cycle en partant de vertex, false sinon
-   */
-  def containsCycleFrom(vertex: Vertex[T]): Boolean = {
-    /*
-     * toCheck : ensemble de sommets qu'il reste à parcourir
-     * tagged  : ensemble de sommets déjà marqués
-     * father  : map donnant le sommet père d'un autre sommet (dans le parcours)
-     */
-    def detectCycleFrom(
-      toCheck: List[Vertex[T]],
-      tagged: Set[Vertex[T]],
-      father: Map[Vertex[T], Vertex[T]]): Boolean = {
-
-      // Si tous les sommets ont été parcourus : pas de cycle
-      if (toCheck.isEmpty)
-        false
-      else {
-        // Sommet à traiter
-        val vertex = toCheck.head
-
-        // Si ce sommet est déjà marqué : cycle détecté
-        if (tagged contains vertex)
-          true
-        else {
-          val neighbours = this getVertexNeighbours vertex
-          // Voisins du sommet courrant
-          val finalNeighbours =
-            // Le père du sommet courant n'est pas pris en compte
-            if (father contains vertex)
-              neighbours - father(vertex)
-            else
-              neighbours
-
-          // Si un des voisins du sommet courant est déjà à traiter : cycle détecté
-          if (finalNeighbours exists (v => toCheck contains v))
-            true
-          else
-            /*
-             * Appel récursif avec :
-             *    les voisins du sommets courant ajoutés aux sommets à traiter
-             *    le sommet courant ajouté aux sommets marqués
-             *    la table des père mise à jour
-             */
-            detectCycleFrom(
-              finalNeighbours.toList ++ toCheck.tail,
-              tagged + vertex,
-              father ++ (finalNeighbours map (v => v -> vertex))
-            )
-        }
-      }
-    }
-
-    val initialFather = ((this getVertexNeighbours vertex) map (v => (v -> vertex))).toMap
-
-    detectCycleFrom(List(vertex), Set(), initialFather)
-  }
-
-  /**
-   * Détermine si le graphe contient un cycle
-   *
-   * @return true si le graphe contient un cycle, false sinon
-   */
-  def containsCycle: Boolean = {
-    def testWithAllVertices(vertices: Set[Vertex[T]]): Boolean =
-      if (vertices.isEmpty)
-        false
-      else if (this containsCycleFrom vertices.head)
-        true
-      else
-        testWithAllVertices(vertices.tail)
-
-    testWithAllVertices(this.vertices)
-  }
-
-  /**
    * Détermine si le graphe est un graphe connexe ou non
    *
    * @return true si le graphe est connexe, false sinon
@@ -228,26 +150,44 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    */
   def getKruskalMST: Graph[T] = {
     /*
-     * mst         : arbre couvrant minimum en cours de construction
-     * unusedEdges : arête a potentiellement ajouter à l'arbre couvrant
+     * sets        : Ensemble des sommets du graphe, chacun associé à un identifiant
+     * edges       : arête à ajouter à l'arbre couvrant
+     * unusedEdges : arête à potentiellement ajouter à l'arbre couvrant
      */
-    def kruskal(mst: Graph[T], unusedEdges: List[Edge[T]]): Graph[T] =
+    def kruskal(sets: List[(Vertex[T], Int)], edges: Set[Edge[T]], unusedEdges: List[Edge[T]]): Graph[T] =
+      // Si toutes les arêtes ont été parcourues, le graphe peut être renvoyé
       if (unusedEdges.isEmpty)
-        mst
+        new Graph(this.vertices, edges)
       else {
-        val newMST = mst addEdge unusedEdges.head
+        // Fonction qui trouve l'identifiant d'un sommet
+        def findSetOf(v: Vertex[T]): Int = (sets filter (c => c._1 == v)).head._2
+        // Arête à considérer pour cette itération
+        val edge = unusedEdges.head
+        // Extrémités de l'arête à considérer
+        val (v1, v2) = (edge.v1, edge.v2)
+        // Identifiants des extrémités
+        val (i1, i2) = (findSetOf(v1), findSetOf(v2))
 
-        if (newMST.containsCycle)
-          kruskal(mst, unusedEdges.tail)
+        // Si les identifiants sont différents, on peut ajouter l'arête (pas de cycle)
+        if (i1 != i2) {
+          /*
+           * Les identifiants sont mis à jours :
+           * Tous les sommets qui avaient l'identifiant i2 ont maintenant
+           * l'identifiant i1
+           */
+          val newSets = sets map (c => if (c._2 == i2) (c._1, i1) else c)
+          kruskal(newSets, edges + edge, unusedEdges.tail)
+        }
+        // Sinon, ajouter l'arête créerait un cycle, elle n'est pas ajoutée
         else
-          kruskal(newMST, unusedEdges.tail)
+          kruskal(sets, edges, unusedEdges.tail)
       }
 
-    val initMST = new Graph(this.vertices, Set[Edge[T]]())
-    val initUnusedEdges =
-      this.edges.toList sortWith ((e1, e2) => e1.weight < e2.weight)
+    // Chaque sommet possède son propre identifiant
+    val initSets = (this.vertices zip (1 to this.vertices.size)).toList
+    val orderedEdges = this.edges.toList sortWith ((e1, e2) => e1.weight < e2.weight)
 
-    kruskal(initMST, initUnusedEdges)
+    kruskal(initSets, Set(), orderedEdges)
   }
 
   override def toString: String =

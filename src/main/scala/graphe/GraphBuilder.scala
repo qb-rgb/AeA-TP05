@@ -14,14 +14,14 @@ object GraphBuilder {
         findCouples(matcher, index + 1, (transform(couple(0)), couple(1).toInt) :: res)
       } else res
 
-    val splitPattern = Pattern compile "(\\d+)\\s+([\\d+\\s+\\d+\\s*]+)"
+    val splitPattern = Pattern compile "([\\d\\w]+)\\s+([[\\d\\w]+\\s+\\d+\\s*]+)"
     val splitMatcher = splitPattern matcher line
 
     if (splitMatcher.matches) {
       val vertex = Vertex(transform(splitMatcher group 1))
       val vertexesAndWeight = splitMatcher group 2
 
-      val vAndWPattern = Pattern compile "(\\d+\\s+\\d+)"
+      val vAndWPattern = Pattern compile "([\\d\\w]+\\s+\\d+)"
       val vAndWMatcher = vAndWPattern matcher vertexesAndWeight
 
       val couples = findCouples(vAndWMatcher, 1, Nil)
@@ -52,5 +52,14 @@ object GraphBuilder {
    */
   def buildIntGraph(path: String): Graph[Int] =
     this.buildTGraph(path, (s => s.toInt))
+
+  /**
+   * Construit un graphe de type String à partir d'un fichier
+   *
+   * @param path chemin vers le fichier
+   * @return graphe généré à partir du fichier
+   */
+  def buildStringGraph(path: String): Graph[String] =
+    this.buildTGraph(path, (s => s))
 
 }
