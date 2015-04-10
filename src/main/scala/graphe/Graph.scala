@@ -107,4 +107,8 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
   override def toString: String =
     this.edges mkString "\n"
 
+  ////////////////
+  // COLORATION //
+  ////////////////
+
 }
