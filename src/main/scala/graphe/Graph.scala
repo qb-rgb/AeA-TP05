@@ -50,6 +50,9 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
   def getVertexNeighbours(vertex: Vertex[T]): Set[Vertex[T]] =
     (this getVertexEdges vertex) map (e => e other vertex)
 
+  def getVertexDegree(vertex: Vertex[T]): Int =
+    (this getVertexEdges vertex).size
+
   /**
    * Détermine si le graphe est un graphe connexe ou non
    *
