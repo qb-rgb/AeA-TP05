@@ -173,6 +173,20 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
       this.vertices.toList
     )
 
+  /**
+   * Donne une coloration du graphe avec l'algorithme de Welsh-Powel
+   */
+  def getWelshPowerColoration: ColorationResult[T] = {
+    // Les sommets du graphe sont triés dans l'ordre décroissant de leur degrès
+    val orderedVertices = this.vertices.toList sortWith (
+      (v1, v2) => this.getVertexDegree(v1) > this.getVertexDegree(v2)
+    )
+
+    this.baseColoration(
+      Map[Vertex[T], Color](),
+      List(Color(1)),
+      orderedVertices
+    )
   }
 
 }
