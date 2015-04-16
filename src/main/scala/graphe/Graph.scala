@@ -114,6 +114,53 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
   // COLORATION //
   ////////////////
 
+  /*
+   * coloredVertices : sommets du graphe déjà colorés
+   * colors          : couleurs pour l'instant utilisées dans le graphe
+   * vertices        : sommets du graphe qu'il reste à colorer
+   */
+  private def baseColoration(
+    coloredVertices: Map[Vertex[T], Color],
+    colors: List[Color],
+    vertices: List[Vertex[T]]
+  ): ColorationResult[T] =
+    // Si tous les sommets ont été colorés, la coloration est retournée
+    if (vertices.isEmpty)
+      new ColorationResult(this, coloredVertices, colors.size)
+    else {
+      // Sommet à colorer
+      val vertex = vertices.head
+      // Voisins du sommet à colorer
+      val neighbours = this getVertexNeighbours vertex
+      // Couleurs des voisins du sommet à colorer
+      val neighboursColors = neighbours map (n =>
+        if (coloredVertices contains n) coloredVertices(n) else Color(-1)
+      )
+      // Couleurs avec lesquelles le sommet à colorer peut l'être
+      val accessibleColors = colors filterNot neighboursColors.contains
+
+      // Si aucune couleur n'est disponible
+      if (accessibleColors.isEmpty) {
+        // Il faut en créer une nouvelle pour colorer le sommet
+        val newColor = colors.head.next
+
+        this.baseColoration(
+          coloredVertices + (vertex -> newColor),
+          newColor :: colors,
+          vertices.tail
+        )
+      } else {
+        // Sinon le sommet est colorer avec la plus petite couleur
+        val vertexColor = accessibleColors.last
+
+        this.baseColoration(
+          coloredVertices + (vertex -> vertexColor),
+          colors,
+          vertices.tail
+        )
+      }
+    }
+
   /**
    * Donne une coloration du graphe avec un algorithme greedy
    *
@@ -153,7 +200,6 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
         }
       }
 
-    greedyColoration(Map[Vertex[T], Color](), List(Color(1)), this.vertices)
   }
 
 }
