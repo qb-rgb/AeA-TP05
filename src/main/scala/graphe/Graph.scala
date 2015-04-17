@@ -139,26 +139,21 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
       // Couleurs avec lesquelles le sommet à colorer peut l'être
       val accessibleColors = colors filterNot neighboursColors.contains
 
-      // Si aucune couleur n'est disponible
-      if (accessibleColors.isEmpty) {
-        // Il faut en créer une nouvelle pour colorer le sommet
-        val newColor = colors.head.next
+      val (vertexColor, newColors) =
+        // Si aucune couleur n'est accessible
+        if (accessibleColors.isEmpty) {
+          // Une nouvelle couleur est crée et ajoutée aux couleurs disponibles
+          val newColor = colors.head.next
+          (newColor, newColor :: colors)
+        } else
+          // Sinon la plus petite couleur est choisie
+          (accessibleColors.last, colors)
 
-        this.baseColoration(
-          coloredVertices + (vertex -> newColor),
-          newColor :: colors,
-          vertices.tail
-        )
-      } else {
-        // Sinon le sommet est colorer avec la plus petite couleur
-        val vertexColor = accessibleColors.last
-
-        this.baseColoration(
-          coloredVertices + (vertex -> vertexColor),
-          colors,
-          vertices.tail
-        )
-      }
+      this.baseColoration(
+        coloredVertices + (vertex -> vertexColor),
+        newColors,
+        vertices.tail
+      )
     }
 
   /**
