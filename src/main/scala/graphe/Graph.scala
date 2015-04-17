@@ -186,4 +186,117 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
     )
   }
 
+  /**
+   * Donne une coloration du graphe avec l'algorithme DSATUR
+   *
+   * @return coloration du graphe
+   */
+  def getDSATURColoration: ColorationResult[T] = {
+    // Donne le score DSAT d'un sommet
+    def vertexDSAT(vertex: Vertex[T], coloredVertices: Map[Vertex[T], Color]) = {
+      val neighbours = this getVertexNeighbours vertex
+      val coloredNeighbours = neighbours filter coloredVertices.contains
+
+      // Si le sommet ne possède pas de voisins colorés
+      if (coloredNeighbours.isEmpty)
+        // Son degrès est retourné
+        this getVertexDegree vertex
+      else
+        /*
+         * Sinon c'est le nombre de couleurs différentes utilisées dans son
+         * voisinnage
+         */
+        coloredVertices.
+        filter(c => coloredNeighbours contains c._1).
+        map(c => c._2).
+        toList.
+        distinct.
+        size
+    }
+
+    // Fonction d'ordre utilisé dans l'algorithme
+    def orderFunction(
+      v1: Vertex[T],
+      v2: Vertex[T],
+      coloredVertices: Map[Vertex[T], Color]
+    ): Boolean = {
+      val dsat1 = vertexDSAT(v1, coloredVertices)
+      val dsat2 = vertexDSAT(v2, coloredVertices)
+
+      // Si le score DSAT des deux sommets est différent
+      if (dsat1 != dsat2)
+        // Le sommet à placé en premier est celui qui a le score le plus élevé
+        dsat1 > dsat2
+      else
+        /*
+         * Si le score est le même, c'est le sommet de plus haut degrès qui est
+         * placé en premier
+         */
+        (this getVertexDegree v1) > (this getVertexDegree v2)
+    }
+
+    // Ordonne une liste selon la fonction d'ordre
+    def orderList(l: List[Vertex[T]], map: Map[Vertex[T], Color]): List[Vertex[T]] =
+      l sortWith ((v1, v2) => orderFunction(v1, v2, map))
+
+    /*
+     * coloredVertices : sommets du graphe déjà colorés
+     * colors          : couleurs pour l'instant utilisées dans le graphe
+     * vertices        : sommets du graphe qu'il reste à colorer
+     */
+    def dsaturColoration(
+      coloredVertices: Map[Vertex[T], Color],
+      colors: List[Color],
+      vertices: List[Vertex[T]]
+    ): ColorationResult[T] =
+      // Si tous les sommets ont été colorés, la coloration est retournée
+      if (vertices.isEmpty)
+        new ColorationResult(this, coloredVertices, colors.size)
+      else {
+        // Sommet à colorer
+        val vertex = vertices.head
+        // Voisins du sommet à colorer
+        val neighbours = this getVertexNeighbours vertex
+        // Couleurs des voisins du sommet à colorer
+        val neighboursColors = neighbours map (n =>
+          if (coloredVertices contains n) coloredVertices(n) else Color(-1)
+        )
+        // Couleurs avec lesquelles le sommet à colorer peut l'être
+        val accessibleColors = colors filterNot neighboursColors.contains
+
+        val (vertexColor, newColors) =
+          // Si aucune couleur n'est accessible
+          if (accessibleColors.isEmpty) {
+            // Une nouvelle couleur est crée et ajoutée aux couleurs disponibles
+            val newColor = colors.head.next
+            (newColor, newColor :: colors)
+          } else
+            // Sinon la plus petite couleur est choisie
+            (accessibleColors.last, colors)
+
+        // Map mise à jour
+        val newMap = coloredVertices + (vertex -> vertexColor)
+        // Liste nouvellement ordonnée
+        val newList = orderList(vertices.tail, newMap)
+
+        dsaturColoration(newMap, newColors, newList)
+      }
+
+    // Sommets du graphe ordonnés selon leur degrès
+    val orderedVertices = this.vertices.toList sortWith (
+      (v1, v2) => (this getVertexDegree v1) > (this getVertexDegree v2)
+    )
+    // Première couleur
+    val firstColor = Color(1)
+    // La première couleur est assigné au sommet de plus haut degrès
+    val firstMap = Map(orderedVertices.head -> firstColor)
+
+    // Appel initial
+    dsaturColoration(
+      firstMap,
+      List(firstColor),
+      orderList(orderedVertices.tail, firstMap)
+    )
+  }
+
 }
