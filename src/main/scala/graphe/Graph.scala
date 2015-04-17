@@ -170,6 +170,8 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
 
   /**
    * Donne une coloration du graphe avec l'algorithme de Welsh-Powel
+   *
+   * @return coloration du graphe
    */
   def getWelshPowerColoration: ColorationResult[T] = {
     // Les sommets du graphe sont triés dans l'ordre décroissant de leur degrès
