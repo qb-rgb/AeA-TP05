@@ -1,3 +1,5 @@
+assemblyJarName := "TestPerfColo.jar"
+
 name := "AeA-TP05"
 
 version := "1.0"
