@@ -1,12 +1,10 @@
 /**
- * Main
- *
  * Affiche les moyennes de couleurs et de temps d'éxécution des algorithmes
  * de coloration implémentés
  *
  * @author Quentin Baert
  */
-object Main {
+object TestPerfColo {
 
   // Éxécute une coloration en fonction d'une chaîne passée en paramètre
   private def executeColoration(graph: Graph, colorationName: String): (ColorationResult, Long) =
