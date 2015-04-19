@@ -8,9 +8,9 @@
  *
  * @author Quentin Baert
  */
-case class Edge[T](
-  val v1: Vertex[T],
-  val v2: Vertex[T],
+case class Edge(
+  val v1: Vertex,
+  val v2: Vertex,
   val weight: Int) {
 
   // Les deux extrémités d'une arête doivent être différentes
@@ -22,7 +22,7 @@ case class Edge[T](
    * @param v une des extrémité de l'arête
    * @return autre extrémité de l'arête
    */
-  def other(v: Vertex[T]): Vertex[T] =
+  def other(v: Vertex): Vertex =
     if (v == this.v1)
       this.v2
     else if (v == this.v2)
@@ -36,7 +36,7 @@ case class Edge[T](
     this.v1.toString + " -- " + this.v2.toString + " (" + this.weight + ")"
 
   override def equals(other: Any): Boolean = other match {
-    case that: Edge[_] => {
+    case that: Edge => {
       val bool = (that canEqual this) && (this.weight == that.weight)
 
       if (this.v1 == that.v1)
@@ -49,7 +49,7 @@ case class Edge[T](
     case _ => false
   }
 
-  def canEqual(other: Any) = other.isInstanceOf[Edge[_]]
+  def canEqual(other: Any) = other.isInstanceOf[Edge]
 
   override def hashCode: Int =
     (41 * (41 + weight)) + v1.hashCode + v2.hashCode

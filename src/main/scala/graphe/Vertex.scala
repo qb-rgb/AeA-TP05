@@ -6,17 +6,17 @@
  *
  * @author Quentin Baert
  */
-case class Vertex[T](val id: T) {
+case class Vertex(val id: String) {
 
   override def toString: String =
     this.id.toString
 
   override def equals(other: Any): Boolean = other match {
-    case that: Vertex[_] => (that canEqual this) && (this.id == that.id)
+    case that: Vertex => (that canEqual this) && (this.id == that.id)
     case _ => false
   }
 
-  def canEqual(other: Any) = other.isInstanceOf[Vertex[_]]
+  def canEqual(other: Any) = other.isInstanceOf[Vertex]
 
   override def hashCode: Int = this.id.hashCode
 

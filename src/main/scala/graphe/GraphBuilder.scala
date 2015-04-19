@@ -6,8 +6,8 @@ import java.util.regex.Matcher
 object GraphBuilder {
 
   // Construit une liste d'arêtes depuis une ligne du fichier servant à générer le graphe
-  private def listOfEdgesFromLine[T](line: String, transform: String => T): Set[Edge[T]] = {
-    def findCouples(matcher: Matcher, index: Int, res: List[(T, Int)]): List[(T, Int)] =
+  private def listOfEdgesFromLine(line: String, transform: String => String): Set[Edge] = {
+    def findCouples(matcher: Matcher, index: Int, res: List[(String, Int)]): List[(String, Int)] =
       if (matcher.find) {
         val stringCouple = matcher group 1
         val couple = stringCouple split " "
@@ -32,26 +32,16 @@ object GraphBuilder {
   }
 
   // Construit un graphe de n'importe quel type
-  private def buildTGraph[T](path: String, transform: String => T): Graph[T] = {
+  private def buildTGraph(path: String, transform: String => String): Graph = {
     // Récupération du fichier sous forme de chaine de caractèresj
     val text = (Source fromFile path).mkString
     // Liste de lignes
     val lines = (text split "\n").toList
     val edges = lines flatMap (l => this.listOfEdgesFromLine(l, transform))
-    val vertices = edges.foldLeft(Set[Vertex[T]]())((a, e) => a + e.v1 + e.v2)
+    val vertices = edges.foldLeft(Set[Vertex]())((a, e) => a + e.v1 + e.v2)
 
     new Graph(vertices, edges.toSet)
   }
-
-  /**
-   * Construit un graphe de type Int à partir d'un fichier
-   * Les identifiants des sommets doivent donc représenter des entiers
-   *
-   * @param path chemin vers le fichier
-   * @return graphe généré à partir du fichier
-   */
-  def buildIntGraph(path: String): Graph[Int] =
-    this.buildTGraph(path, (s => s.toInt))
 
   /**
    * Construit un graphe de type String à partir d'un fichier
@@ -59,7 +49,7 @@ object GraphBuilder {
    * @param path chemin vers le fichier
    * @return graphe généré à partir du fichier
    */
-  def buildStringGraph(path: String): Graph[String] =
+  def buildStringGraph(path: String): Graph =
     this.buildTGraph(path, (s => s))
 
 }

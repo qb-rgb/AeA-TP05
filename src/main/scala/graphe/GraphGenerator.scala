@@ -14,8 +14,8 @@ object RandomGraphGenerator {
    * @param p probabilité avec laquelle une arête va être crée entre deux sommets
    * @return graphe généré aléatoirement selon n et p
    */
-  def generateErdosRenyiGraph(n: Int, p: Float): Graph[Int] = {
-    val vertexes = (1 to n) map (n => Vertex(n))
+  def generateErdosRenyiGraph(n: Int, p: Float): Graph = {
+    val vertexes = (1 to n) map (n => Vertex(n.toString))
     val N = scala.math.pow(n, 4).toInt
     val r = new Random
     val edges = for {

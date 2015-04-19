@@ -7,7 +7,7 @@
  *
  * @author Quentin Baert
  */
-class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
+class Graph(val vertices: Set[Vertex], val edges: Set[Edge]) {
 
   ///////////////
   // ATTRIBUTS //
@@ -16,7 +16,7 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
   /**
    * Permet d'accéder aux noeuds du graphe par leur identifiant
    */
-  val verticesId: Map[T, Vertex[T]] =
+  val verticesId: Map[String, Vertex] =
     (this.vertices map (x => x.id -> x)).toMap
 
   //////////////
@@ -29,7 +29,7 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    * @param vertex noeud dont on souhaite récupérer les arêtes
    * @return arêtes du graphe reliées au sommet vertex
    */
-  def getVertexEdges(vertex: Vertex[T]): Set[Edge[T]] =
+  def getVertexEdges(vertex: Vertex): Set[Edge] =
     this.edges filter (e => (e.v1 == vertex) || (e.v2 == vertex))
 
   /**
@@ -38,13 +38,13 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    * @param vertex sommet dont on souhaite récupérer les succésseurs
    * @return ensemble des succéseurs de vertex
    */
-  def getVertexNeighbours(vertex: Vertex[T]): Set[Vertex[T]] =
+  def getVertexNeighbours(vertex: Vertex): Set[Vertex] =
     (this getVertexEdges vertex) map (e => e other vertex)
 
   /**
    * Donne le degrès d'un sommet
    */
-  def getVertexDegree(vertex: Vertex[T]): Int =
+  def getVertexDegree(vertex: Vertex): Int =
     (this getVertexEdges vertex).size
 
   /**
@@ -61,8 +61,8 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    * @param vertex noeud à ajouter au graphe
    * @return nouveau graphe avec un noeud supplémentaire
    */
-  def addVertex(vertex: Vertex[T]): Graph[T] =
-    new Graph[T](this.vertices + vertex, this.edges)
+  def addVertex(vertex: Vertex): Graph =
+    new Graph(this.vertices + vertex, this.edges)
 
   /**
    * Retourne un nouveau graphe avec une arête supplémentaire
@@ -70,10 +70,10 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    * @param edge arête à ajouter au graphe
    * @return nouveau graphe avec une arête supplémentaire
    */
-  def addEdge(edge: Edge[T]): Graph[T] =
+  def addEdge(edge: Edge): Graph =
     if ((this.vertices contains edge.v1) &&
         (this.vertices contains edge.v2))
-      new Graph[T](this.vertices, this.edges + edge)
+      new Graph(this.vertices, this.edges + edge)
     else
       throw new Error("Graph.addEdge : Impossible d'ajouter l'arête")
 
@@ -85,7 +85,7 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    * @param weight poids de l'arête
    * @return nouveau graphe avec une arête supplémentaire
    */
-  def addEdgeBetween(v1: Vertex[T], v2: Vertex[T], weight: Int): Graph[T] =
+  def addEdgeBetween(v1: Vertex, v2: Vertex, weight: Int): Graph =
     this addEdge (new Edge(v1, v2, weight))
 
   override def toString: String =
@@ -101,10 +101,10 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    * vertices        : sommets du graphe qu'il reste à colorer
    */
   private def baseColoration(
-    coloredVertices: Map[Vertex[T], Color],
+    coloredVertices: Map[Vertex, Color],
     colors: List[Color],
-    vertices: List[Vertex[T]]
-  ): ColorationResult[T] =
+    vertices: List[Vertex]
+  ): ColorationResult =
     // Si tous les sommets ont été colorés, la coloration est retournée
     if (vertices.isEmpty)
       new ColorationResult(this, coloredVertices, colors.size)
@@ -142,9 +142,9 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    *
    * @return coloration du graphe
    */
-  def getGreedyColoration: ColorationResult[T] =
+  def getGreedyColoration: ColorationResult =
     this.baseColoration(
-      Map[Vertex[T], Color](),
+      Map[Vertex, Color](),
       List(Color(1)),
       this.vertices.toList
     )
@@ -154,14 +154,14 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    *
    * @return coloration du graphe
    */
-  def getWelshPowerColoration: ColorationResult[T] = {
+  def getWelshPowerColoration: ColorationResult = {
     // Les sommets du graphe sont triés dans l'ordre décroissant de leur degrès
     val orderedVertices = this.vertices.toList sortWith (
       (v1, v2) => this.getVertexDegree(v1) > this.getVertexDegree(v2)
     )
 
     this.baseColoration(
-      Map[Vertex[T], Color](),
+      Map[Vertex, Color](),
       List(Color(1)),
       orderedVertices
     )
@@ -172,9 +172,9 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    *
    * @return coloration du graphe
    */
-  def getDSATURColoration: ColorationResult[T] = {
+  def getDSATURColoration: ColorationResult = {
     // Donne le score DSAT d'un sommet
-    def vertexDSAT(vertex: Vertex[T], coloredVertices: Map[Vertex[T], Color]) = {
+    def vertexDSAT(vertex: Vertex, coloredVertices: Map[Vertex, Color]) = {
       val neighbours = this getVertexNeighbours vertex
       val coloredNeighbours = neighbours filter coloredVertices.contains
 
@@ -197,9 +197,9 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
 
     // Fonction d'ordre utilisé dans l'algorithme
     def orderFunction(
-      v1: Vertex[T],
-      v2: Vertex[T],
-      coloredVertices: Map[Vertex[T], Color]
+      v1: Vertex,
+      v2: Vertex,
+      coloredVertices: Map[Vertex, Color]
     ): Boolean = {
       val dsat1 = vertexDSAT(v1, coloredVertices)
       val dsat2 = vertexDSAT(v2, coloredVertices)
@@ -217,7 +217,7 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
     }
 
     // Ordonne une liste selon la fonction d'ordre
-    def orderList(l: List[Vertex[T]], map: Map[Vertex[T], Color]): List[Vertex[T]] =
+    def orderList(l: List[Vertex], map: Map[Vertex, Color]): List[Vertex] =
       l sortWith ((v1, v2) => orderFunction(v1, v2, map))
 
     /*
@@ -226,10 +226,10 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
      * vertices        : sommets du graphe qu'il reste à colorer
      */
     def dsaturColoration(
-      coloredVertices: Map[Vertex[T], Color],
+      coloredVertices: Map[Vertex, Color],
       colors: List[Color],
-      vertices: List[Vertex[T]]
-    ): ColorationResult[T] =
+      vertices: List[Vertex]
+    ): ColorationResult =
       // Si tous les sommets ont été colorés, la coloration est retournée
       if (vertices.isEmpty)
         new ColorationResult(this, coloredVertices, colors.size)
