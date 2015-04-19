@@ -41,6 +41,9 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
   def getVertexNeighbours(vertex: Vertex[T]): Set[Vertex[T]] =
     (this getVertexEdges vertex) map (e => e other vertex)
 
+  /**
+   * Donne le degrès d'un sommet
+   */
   def getVertexDegree(vertex: Vertex[T]): Int =
     (this getVertexEdges vertex).size
 
