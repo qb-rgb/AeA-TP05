@@ -107,7 +107,7 @@ class Graph(val vertices: Set[Vertex], val edges: Set[Edge]) {
   ): ColorationResult =
     // Si tous les sommets ont été colorés, la coloration est retournée
     if (vertices.isEmpty)
-      new ColorationResult(this, coloredVertices, colors.size)
+      new ColorationResult(coloredVertices, colors.size)
     else {
       // Sommet à colorer
       val vertex = vertices.head
@@ -154,7 +154,7 @@ class Graph(val vertices: Set[Vertex], val edges: Set[Edge]) {
    *
    * @return coloration du graphe
    */
-  def getWelshPowerColoration: ColorationResult = {
+  def getWelshPowellColoration: ColorationResult = {
     // Les sommets du graphe sont triés dans l'ordre décroissant de leur degrès
     val orderedVertices = this.vertices.toList sortWith (
       (v1, v2) => this.getVertexDegree(v1) > this.getVertexDegree(v2)
@@ -232,7 +232,7 @@ class Graph(val vertices: Set[Vertex], val edges: Set[Edge]) {
     ): ColorationResult =
       // Si tous les sommets ont été colorés, la coloration est retournée
       if (vertices.isEmpty)
-        new ColorationResult(this, coloredVertices, colors.size)
+        new ColorationResult(coloredVertices, colors.size)
       else {
         // Sommet à colorer
         val vertex = vertices.head
