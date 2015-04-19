@@ -33,15 +33,6 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
     this.edges filter (e => (e.v1 == vertex) || (e.v2 == vertex))
 
   /**
-   * Donne toutes les arêtes du graphe reliées à un sommet donné
-   *
-   * @param vertexId identifiant du noeud dont on souhaite récupérer les arêtes
-   * @return arêtes du graphe reliées au sommet d'identifiant vertexId
-   */
-  def getVertexEdges(vertexId: T): Set[Edge[T]] =
-    this getVertexEdges this.verticesId(vertexId)
-
-  /**
    * Donne les succésseurs d'un sommet du graphe
    *
    * @param vertex sommet dont on souhaite récupérer les succésseurs
@@ -93,19 +84,6 @@ class Graph[T](val vertices: Set[Vertex[T]], val edges: Set[Edge[T]]) {
    */
   def addEdgeBetween(v1: Vertex[T], v2: Vertex[T], weight: Int): Graph[T] =
     this addEdge (new Edge(v1, v2, weight))
-
-  /**
-   * Retourne un nouveau graphe avec une arête supplémentaire
-   *
-   * @param v1 première extrémitée de l'arête
-   * @param v2 seconde extrémitée de l'arête
-   * @param weight poids de l'arête
-   * @return nouveau graphe avec une arête supplémentaire
-   */
-  def addEdgeBetween(v1Id: T, v2Id: T, weight: Int): Graph[T] = {
-    val edge = new Edge(this.verticesId(v1Id), this.verticesId(v2Id), weight)
-    this addEdge edge
-  }
 
   override def toString: String =
     this.edges mkString "\n"
