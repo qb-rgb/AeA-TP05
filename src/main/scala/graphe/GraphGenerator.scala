@@ -22,7 +22,7 @@ object RandomGraphGenerator {
       v1 <- vertexes
       v2 <- vertexes
       if (v1.id < v2.id)
-      if (r.nextFloat > p)
+      if (r.nextFloat < p)
     } yield new Edge(v1, v2, r.nextInt(N))
 
     new Graph(vertexes.toSet, edges.toSet)
